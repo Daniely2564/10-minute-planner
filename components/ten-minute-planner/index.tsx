@@ -1,13 +1,26 @@
 "use client";
 import { useState } from "react";
 
+interface TimeBlock {
+  start: number;
+  end: number;
+  label: string;
+  color: string;
+  description: string;
+}
+
 interface TenMinutePlannerProps {
   initialTimeStart: number;
+  timeblocks: TimeBlock[];
 }
 
 const tenMinutesInHour = 6;
-const TenMinutePlanner = ({ initialTimeStart = 6 }: TenMinutePlannerProps) => {
+const TenMinutePlanner = ({
+  initialTimeStart = 6,
+  timeblocks: initialTimeblocks = [],
+}: TenMinutePlannerProps) => {
   const [range, setRange] = useState<null | [number] | [Number, number]>(null);
+  const [timeblocks, setTimeblocks] = useState<TimeBlock[]>(initialTimeblocks);
   const onCellClick = (id: number) => {
     if (range === null) {
       setRange([id]);
@@ -34,6 +47,7 @@ const TenMinutePlanner = ({ initialTimeStart = 6 }: TenMinutePlannerProps) => {
       {Array.from({ length: 24 }).map((_, i) => (
         <TenMinuteRow
           id={i}
+          hour={(i + initialTimeStart) % 24}
           key={i}
           on={false}
           onClick={onCellClick}
@@ -49,25 +63,30 @@ const TenMinuteRow = ({
   on,
   onClick,
   isCellInRange,
+  hour,
 }: {
   id: number;
   on: boolean;
   onClick: (id: number) => void;
   isCellInRange: (id: number) => boolean;
+  hour: number;
 }) => {
   return (
-    <div>
-      {Array.from({ length: tenMinutesInHour }).map((_, i) => {
-        const key = id * tenMinutesInHour + i;
-        return (
-          <TenMinuteCell
-            id={key}
-            on={isCellInRange(key)}
-            key={key}
-            onClick={() => onClick(key)}
-          />
-        );
-      })}
+    <div className="flex items-center gap-2">
+      <div className="min-w-5 text-sm text-right flex-1">{hour}</div>
+      <div>
+        {Array.from({ length: tenMinutesInHour }).map((_, i) => {
+          const key = id * tenMinutesInHour + i;
+          return (
+            <TenMinuteCell
+              id={key}
+              on={isCellInRange(key)}
+              key={key}
+              onClick={() => onClick(key)}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -83,8 +102,10 @@ const TenMinuteCell = ({
 }) => {
   return (
     <div
-      className={`w-7 h-7 border ${on ? "bg-blue-500" : "bg-gray-200"}`}
-      style={{ display: "inline-block", margin: "1px" }}
+      className={`w-7 h-7 border-b border-r cursor-pointer last-of-type:border-r-0 first-of-type:border-l ${
+        on ? "bg-blue-500" : "bg-transparent"
+      }`}
+      style={{ display: "inline-block" }}
       onClick={onClick}
     >
       {id}
