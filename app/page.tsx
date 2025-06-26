@@ -1,9 +1,33 @@
-import TenMinutePlanner from "@custom/components/ten-minute-planner";
-import { Fragment } from "react";
+"use client";
+import Checkbox from "@custom/components/checkbox";
+import Slider from "@custom/components/drawer";
+import TenMinutePlanner, {
+  TimeBlock,
+} from "@custom/components/ten-minute-planner";
+import TimeblockSlider from "@custom/components/timeblockSlider";
+import { useState } from "react";
 
 export default function Home() {
+  const timeblocks: TimeBlock[] = [];
+  const [showTimeblockSlider, setShowTimeblockSlider] = useState(false);
+  const [timeblockContent, setTimeblockContent] = useState<{
+    start: string;
+    end: string;
+  } | null>(null);
+  const onTimeblockCreate = (start: number, end: number, cb?: () => void) => {
+    console.log("hi", start, end);
+    setShowTimeblockSlider(true);
+    setTimeblockContent({ start, end });
+    typeof cb === "function" && cb();
+  };
   return (
     <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <TimeblockSlider
+        open={showTimeblockSlider}
+        close={() => setShowTimeblockSlider(false)}
+        startTime={timeblockContent?.start}
+        endTime={timeblockContent?.end}
+      />
       <div>
         <h1 className="text-2xl pb-1 font-bold uppercase">2025 October</h1>
       </div>
@@ -57,12 +81,18 @@ export default function Home() {
                 <div className="col-span-1 border-r text-center py-0.5">
                   Something
                 </div>
-                <div className="col-span-3 pl-2 py-0.5">Something</div>
+                <div className="col-span-3 pl-2 pr-2 py-0.5 flex">
+                  <div className="flex-1">Something</div>
+                  <Checkbox id={`checkbox-${idx}`} onClick={console.log} />
+                </div>
               </div>
             ))}
           </div>
           <div className="col-span-2 border-l-1">
-            <TenMinutePlanner />
+            <TenMinutePlanner
+              timeblocks={timeblocks}
+              onTimeblockCreate={onTimeblockCreate}
+            />
           </div>
         </div>
         <div className="flex-1">Space</div>

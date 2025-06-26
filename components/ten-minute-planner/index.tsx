@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-interface TimeBlock {
+export interface TimeBlock {
   start: number;
   end: number;
   label: string;
@@ -9,15 +9,18 @@ interface TimeBlock {
   description: string;
 }
 
+const tenMinutesInHour = 6;
+
 interface TenMinutePlannerProps {
-  initialTimeStart: number;
+  initialTimeStart?: number;
   timeblocks: TimeBlock[];
+  onTimeblockCreate: (start: number, end: number, cb?: () => void) => void;
 }
 
-const tenMinutesInHour = 6;
 const TenMinutePlanner = ({
   initialTimeStart = 6,
   timeblocks: initialTimeblocks = [],
+  onTimeblockCreate,
 }: TenMinutePlannerProps) => {
   const [range, setRange] = useState<null | [number] | [Number, number]>(null);
   const [timeblocks, setTimeblocks] = useState<TimeBlock[]>(initialTimeblocks);
@@ -27,8 +30,14 @@ const TenMinutePlanner = ({
     } else if (range.length === 1) {
       if (id < range[0]) {
         setRange([id, range[0]]);
+        onTimeblockCreate(id, range[0], () => {
+          setRange(null);
+        });
       } else {
         setRange([range[0], id]);
+        onTimeblockCreate(range[0], id, () => {
+          setRange(null);
+        });
       }
     } else {
       setRange([id]);
