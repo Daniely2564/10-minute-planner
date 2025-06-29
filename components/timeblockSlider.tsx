@@ -3,15 +3,17 @@
 import { _500Colors, BgColorWithLightness } from "@custom/types";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ColorPicker from "./colorPicker";
 import { cn } from "@custom/lib";
+import { initialTimeStart } from "@custom/config/defaults";
 
 interface TimeblockSliderProps {
   open: boolean;
   close: () => void;
-  startTime?: string;
-  endTime?: string;
+  startTime?: number;
+  endTime?: number;
+  onColorChange?: (color: BgColorWithLightness) => void;
 }
 
 const TimeblockSlider = ({
@@ -19,10 +21,28 @@ const TimeblockSlider = ({
   close,
   startTime,
   endTime,
+  onColorChange,
 }: TimeblockSliderProps) => {
   const [form, setForm] = useState<{ color: BgColorWithLightness }>({
-    color: "bg-green-500", // default 500
+    color: "bg-blue-500", // default 500
   });
+  // each idx represents the location of the 10 minute unit
+  // it should calculate base hour + (idx * 10)
+
+  useEffect(() => {
+    onColorChange?.(form.color);
+  }, [form.color]);
+  const calculateTime = (
+    idx: number | undefined,
+    isEnd?: boolean,
+    timeStart: number = initialTimeStart
+  ) => {
+    if (typeof idx === undefined) return `0:0`;
+    const estimatedTime = timeStart * 60 + idx! * 10 + (isEnd ? 9 : 0);
+    const hour = Math.floor(estimatedTime / 60);
+    const min = estimatedTime % 60;
+    return `${hour}:${min < 10 ? "0" + min : min}`;
+  };
   return (
     <Dialog open={open} onClose={close} className="relative z-10">
       <div className="fixed inset-0" />
@@ -87,7 +107,7 @@ const TimeblockSlider = ({
                                 name="project-name"
                                 type="text"
                                 disabled
-                                value={startTime}
+                                value={calculateTime(startTime)}
                                 className="block w-full rounded-md bg-black/30 px-3 py-1.5 text-base text-white/90 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-600 sm:text-sm/6"
                               />
                             </div>
@@ -105,7 +125,7 @@ const TimeblockSlider = ({
                                 name="project-name"
                                 type="text"
                                 disabled
-                                value={endTime}
+                                value={calculateTime(endTime, true)}
                                 className="block w-full rounded-md bg-black/30 px-3 py-1.5 text-base text-white/90 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-600 sm:text-sm/6"
                               />
                             </div>

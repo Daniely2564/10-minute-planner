@@ -5,15 +5,19 @@ import TenMinutePlanner, {
   TimeBlock,
 } from "@custom/components/ten-minute-planner";
 import TimeblockSlider from "@custom/components/timeblockSlider";
+import { _500Colors, BgColorWithLightness } from "@custom/types";
 import { useState } from "react";
 
 export default function Home() {
   const timeblocks: TimeBlock[] = [];
   const [showTimeblockSlider, setShowTimeblockSlider] = useState(false);
   const [timeblockContent, setTimeblockContent] = useState<{
-    start: string;
-    end: string;
+    start: number;
+    end: number;
   } | null>(null);
+  const [timeblockColor, setTimeblockColor] = useState<BgColorWithLightness>(
+    _500Colors[0]
+  );
   const onTimeblockCreate = (start: number, end: number, cb?: () => void) => {
     console.log("hi", start, end);
     setShowTimeblockSlider(true);
@@ -25,6 +29,7 @@ export default function Home() {
       <TimeblockSlider
         open={showTimeblockSlider}
         close={() => setShowTimeblockSlider(false)}
+        onColorChange={(color) => setTimeblockColor(color)}
         startTime={timeblockContent?.start}
         endTime={timeblockContent?.end}
       />
@@ -92,6 +97,7 @@ export default function Home() {
             <TenMinutePlanner
               timeblocks={timeblocks}
               onTimeblockCreate={onTimeblockCreate}
+              selectedRangeColor={timeblockColor}
             />
           </div>
         </div>

@@ -1,4 +1,5 @@
 "use client";
+import { _500Colors, BgColorWithLightness } from "@custom/types";
 import { useState } from "react";
 
 export interface TimeBlock {
@@ -15,12 +16,14 @@ interface TenMinutePlannerProps {
   initialTimeStart?: number;
   timeblocks: TimeBlock[];
   onTimeblockCreate: (start: number, end: number, cb?: () => void) => void;
+  selectedRangeColor?: BgColorWithLightness;
 }
 
 const TenMinutePlanner = ({
   initialTimeStart = 6,
   timeblocks: initialTimeblocks = [],
   onTimeblockCreate,
+  selectedRangeColor,
 }: TenMinutePlannerProps) => {
   const [range, setRange] = useState<null | [number] | [Number, number]>(null);
   const [timeblocks, setTimeblocks] = useState<TimeBlock[]>(initialTimeblocks);
@@ -30,14 +33,10 @@ const TenMinutePlanner = ({
     } else if (range.length === 1) {
       if (id < range[0]) {
         setRange([id, range[0]]);
-        onTimeblockCreate(id, range[0], () => {
-          setRange(null);
-        });
+        onTimeblockCreate(id, range[0]);
       } else {
         setRange([range[0], id]);
-        onTimeblockCreate(range[0], id, () => {
-          setRange(null);
-        });
+        onTimeblockCreate(range[0], id);
       }
     } else {
       setRange([id]);
@@ -61,6 +60,7 @@ const TenMinutePlanner = ({
           on={false}
           onClick={onCellClick}
           isCellInRange={isCellInRange}
+          selectedColor={selectedRangeColor ?? _500Colors[0]}
         />
       ))}
     </div>
@@ -72,12 +72,14 @@ const TenMinuteRow = ({
   on,
   onClick,
   isCellInRange,
+  selectedColor,
   hour,
 }: {
   id: number;
   on: boolean;
   onClick: (id: number) => void;
   isCellInRange: (id: number) => boolean;
+  selectedColor: BgColorWithLightness;
   hour: number;
 }) => {
   return (
@@ -89,7 +91,7 @@ const TenMinuteRow = ({
           return (
             <TenMinuteCell
               id={key}
-              on={isCellInRange(key)}
+              color={isCellInRange(key) ? selectedColor : ""}
               key={key}
               onClick={() => onClick(key)}
             />
@@ -102,17 +104,17 @@ const TenMinuteRow = ({
 
 const TenMinuteCell = ({
   id,
-  on,
+  color,
   onClick,
 }: {
   id: number;
-  on: boolean;
+  color?: string;
   onClick: () => void;
 }) => {
   return (
     <div
       className={`w-7 h-7 border-b border-r cursor-pointer last-of-type:border-r-0 first-of-type:border-l ${
-        on ? "bg-blue-500" : "bg-transparent"
+        color ? color : "bg-transparent"
       }`}
       style={{ display: "inline-block" }}
       onClick={onClick}
