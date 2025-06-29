@@ -18,20 +18,20 @@ const initialContext: TimeblockContextState = {
     start: 0,
     end: 0,
     timeStart: initialTimeStart,
-    color: "bg-amber-100",
+    color: "bg-blue-500",
     activity: "",
     description: "",
   },
 };
 
 export const TimeblockContext = createContext<
-  [TimeblockContextState, Dispatch<GlobalAction>]
+  [TimeblockContextState, Dispatch<TimeblockContextAction>]
 >([initialContext, () => null as any]);
 
 const timeblockReducer = (
   prevState: TimeblockContextState,
-  action: GlobalAction
-) => {
+  action: TimeblockContextAction
+): TimeblockContextState => {
   switch (action.type) {
     case "UPDATE_FORM":
       return {
@@ -46,19 +46,32 @@ const timeblockReducer = (
         ...prevState,
         timeblocks: action.payload,
       };
+    case "CREATE_TIMEBLOCKS_SCHEDULE":
+      const form = prevState.form;
+      if (action.payload?.cb) {
+        action.payload?.cb(form);
+      }
+      return {
+        ...prevState,
+        timeblocks: [...prevState.timeblocks, { ...form }],
+        form: initialContext.form,
+      };
     default:
       throw Error("Invalid Action Type Provided");
   }
 };
 
-export const GlobalPropsProvider = ({
+export const TimeblockContextProvider = ({
   children,
   timeblocks,
 }: {
   children: React.ReactNode;
   timeblocks: TimeBlock[];
 }): any => {
-  const reducer = useReducer(timeblockReducer, initialContext);
+  const reducer = useReducer(timeblockReducer, {
+    ...initialContext,
+    timeblocks,
+  });
 
   return (
     <TimeblockContext.Provider value={reducer}>
@@ -80,7 +93,7 @@ export interface TimeblockContextState {
   form: TimeblockForm;
 }
 
-export type GlobalAction =
+export type TimeblockContextAction =
   | {
       type: "UPDATE_TIMEBLOCKS";
       payload: TimeBlock[];
@@ -88,4 +101,10 @@ export type GlobalAction =
   | {
       type: "UPDATE_FORM";
       payload: Partial<TimeblockForm>;
+    }
+  | {
+      type: "CREATE_TIMEBLOCKS_SCHEDULE";
+      payload?: {
+        cb?: (timeblock: TimeBlock) => void;
+      };
     };
