@@ -1,31 +1,35 @@
-import { TimeblockContextProvider } from "@custom/context/ten-minute-timeblock-context";
+import {
+  TimeblockContextProvider,
+  useTimeblockContext,
+} from "@custom/context/ten-minute-timeblock-context";
 import TenMinutePlanner, { TimeBlock } from "./ten-minute-planner";
 import Checkbox from "./checkbox";
 import TimeblockSlider from "./timeblockSlider";
 import { useState } from "react";
 import { _500Colors, BgColorWithLightness } from "@custom/types";
 
-interface DayPageProps {
-  timeblocks: TimeBlock[];
-}
-
-const DayPage = ({ timeblocks: initialTimeblocks }: DayPageProps) => {
+const DayPage = () => {
   const [showTimeblockSlider, setShowTimeblockSlider] = useState(false);
   const [timeblockContent, setTimeblockContent] = useState<{
     start: number;
     end: number;
   } | null>(null);
-  const [timeblockColor, setTimeblockColor] = useState<BgColorWithLightness>(
-    _500Colors[0]
-  );
+  const [timeblockContext] = useTimeblockContext();
+  const { timeblocks } = timeblockContext;
   const onTimeblockCreate = (start: number, end: number, cb?: () => void) => {
-    console.log("hi", start, end);
     setShowTimeblockSlider(true);
     setTimeblockContent({ start, end });
     typeof cb === "function" && cb();
   };
+  const calculateTotalTime = () => {
+    let count = 0;
+    for (let i = 0; i < 24 * 6; i++) {
+      if (timeblocks.some((tb) => tb.start <= i && i <= tb.end)) count++;
+    }
+    return count * 10; // each count represents 10 minute
+  };
   return (
-    <TimeblockContextProvider timeblocks={initialTimeblocks}>
+    <>
       <TimeblockSlider
         open={showTimeblockSlider}
         close={() => setShowTimeblockSlider(false)}
@@ -71,7 +75,8 @@ const DayPage = ({ timeblocks: initialTimeblocks }: DayPageProps) => {
               Total Time
             </div>
             <div className="flex justify-center h-full items-center min-h-14 text-center">
-              12H 20M
+              {Math.floor(calculateTotalTime() / 60)}H{" "}
+              {calculateTotalTime() % 60}M
             </div>
           </div>
         </div>
@@ -92,8 +97,18 @@ const DayPage = ({ timeblocks: initialTimeblocks }: DayPageProps) => {
           <TenMinutePlanner onTimeblockCreate={onTimeblockCreate} />
         </div>
       </div>
-    </TimeblockContextProvider>
+    </>
   );
 };
 
-export default DayPage;
+interface DayPageWrapperProps {
+  timeblocks: TimeBlock[];
+}
+
+export default function ({ timeblocks }: DayPageWrapperProps) {
+  return (
+    <TimeblockContextProvider timeblocks={timeblocks}>
+      <DayPage></DayPage>
+    </TimeblockContextProvider>
+  );
+}
