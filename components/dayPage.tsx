@@ -6,7 +6,7 @@ import TenMinutePlanner, { TimeBlock } from "./ten-minute-planner";
 import Checkbox from "./checkbox";
 import TimeblockSlider from "./timeblockSlider";
 import { useState } from "react";
-import { _500Colors, BgColorWithLightness } from "@custom/types";
+import { _500Colors } from "@custom/types";
 
 const DayPage = () => {
   const [showTimeblockSlider, setShowTimeblockSlider] = useState(false);

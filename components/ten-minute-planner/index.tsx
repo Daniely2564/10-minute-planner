@@ -1,7 +1,7 @@
 "use client";
 import { useTimeblockContext } from "@custom/context/ten-minute-timeblock-context";
+import { cn } from "@custom/lib";
 import { _500Colors } from "@custom/types";
-import { useState } from "react";
 
 export interface TimeBlock {
   start: number;
@@ -22,20 +22,21 @@ const TenMinutePlanner = ({
   initialTimeStart = 6,
   onTimeblockCreate,
 }: TenMinutePlannerProps) => {
-  const [range, setRange] = useState<null | [number] | [Number, number]>(null);
+  const [timeblockContext, tbReducer] = useTimeblockContext();
+  const { range } = timeblockContext;
   function onCellClick(id: number) {
     if (range === null) {
-      setRange([id]);
+      tbReducer({ type: "SET_RANGES", payload: [id] });
     } else if (range.length === 1) {
       if (id < range[0]) {
-        setRange([id, range[0]]);
+        tbReducer({ type: "SET_RANGES", payload: [id, range[0]] });
         onTimeblockCreate(id, range[0]);
       } else {
-        setRange([range[0], id]);
+        tbReducer({ type: "SET_RANGES", payload: [range[0], id] });
         onTimeblockCreate(range[0], id);
       }
     } else {
-      setRange([id]);
+      tbReducer({ type: "SET_RANGES", payload: [id] });
     }
   }
   function isCellInRange(id: number) {
@@ -87,7 +88,6 @@ const TenMinuteRow = ({
           const key = id * tenMinutesInHour + i;
           return (
             <TenMinuteCell
-              id={key}
               color={
                 timeblockById(key)
                   ? timeblockById(key)!.color
@@ -95,6 +95,7 @@ const TenMinuteRow = ({
                   ? form.color
                   : ""
               }
+              id={key}
               key={key}
               onClick={() => onClick(key)}
             />
@@ -106,21 +107,45 @@ const TenMinuteRow = ({
 };
 
 const TenMinuteCell = ({
-  id,
   color,
   onClick,
+  id,
 }: {
-  id: number;
   color?: string;
   onClick: () => void;
+  id: number;
 }) => {
+  const [timeblockContext, tbReducer] = useTimeblockContext();
+  const { range, timeblocks } = timeblockContext;
+  const timeblock = timeblocks.find((tb) => tb.start <= id && id <= tb.end);
+
   return (
     <div
-      className={`w-7 h-7 border-b border-r cursor-pointer last-of-type:border-r-0 first-of-type:border-l ${
-        color ? color : "bg-transparent"
-      }`}
+      className={cn(
+        "w-7 h-7 border-b border-r cursor-pointer last-of-type:border-r-0 first-of-type:border-l",
+        color ? color : "bg-transparent",
+        range &&
+          range.length === 1 &&
+          range[0] === id &&
+          "border border-red-600",
+        timeblock && timeblock.start === id && "border-r-0",
+        timeblock &&
+          timeblock.start < id + 1 &&
+          id < timeblock.end &&
+          "border-r-0",
+        timeblock && id + 6 <= timeblock.end && "border-b-0"
+      )}
       style={{ display: "inline-block" }}
-      onClick={onClick}
+      onClick={() => {
+        if (timeblock) {
+          tbReducer({
+            type: "SET_TIMEBLOCK",
+            payload: timeblock,
+          });
+        } else {
+          onClick();
+        }
+      }}
     >
       &nbsp;
     </div>

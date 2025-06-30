@@ -3,6 +3,15 @@ import { TimeBlock } from "@custom/components/ten-minute-planner";
 import { initialTimeStart } from "@custom/config/defaults";
 import { BgColorWithLightness } from "@custom/types";
 
+export type Range = null | [number] | [Number, number];
+
+export interface TimeblockContextState {
+  timeblocks: TimeBlock[];
+  form: TimeblockForm;
+  range: Range;
+  currentTimeblock: TimeBlock | null;
+}
+
 export interface TimeblockForm {
   start: number;
   end: number;
@@ -11,6 +20,30 @@ export interface TimeblockForm {
   activity: string;
   description: string;
 }
+
+export type TimeblockContextAction =
+  | {
+      type: "UPDATE_TIMEBLOCKS";
+      payload: TimeBlock[];
+    }
+  | {
+      type: "UPDATE_FORM";
+      payload: Partial<TimeblockForm>;
+    }
+  | {
+      type: "CREATE_TIMEBLOCKS_SCHEDULE";
+      payload?: {
+        cb?: (timeblock: TimeBlock) => void;
+      };
+    }
+  | {
+      type: "SET_RANGES";
+      payload: Range;
+    }
+  | {
+      type: "SET_TIMEBLOCK";
+      payload: TimeBlock | null;
+    };
 
 const initialContext: TimeblockContextState = {
   timeblocks: [],
@@ -22,6 +55,8 @@ const initialContext: TimeblockContextState = {
     activity: "",
     description: "",
   },
+  range: null,
+  currentTimeblock: null,
 };
 
 export const TimeblockContext = createContext<
@@ -56,6 +91,16 @@ const timeblockReducer = (
         timeblocks: [...prevState.timeblocks, { ...form }],
         form: initialContext.form,
       };
+    case "SET_RANGES":
+      return {
+        ...prevState,
+        range: action.payload,
+      };
+    case "SET_TIMEBLOCK":
+      return {
+        ...prevState,
+        currentTimeblock: action.payload,
+      };
     default:
       throw Error("Invalid Action Type Provided");
   }
@@ -87,24 +132,3 @@ export const useTimeblockContext = () => {
 
   return context;
 };
-
-export interface TimeblockContextState {
-  timeblocks: TimeBlock[];
-  form: TimeblockForm;
-}
-
-export type TimeblockContextAction =
-  | {
-      type: "UPDATE_TIMEBLOCKS";
-      payload: TimeBlock[];
-    }
-  | {
-      type: "UPDATE_FORM";
-      payload: Partial<TimeblockForm>;
-    }
-  | {
-      type: "CREATE_TIMEBLOCKS_SCHEDULE";
-      payload?: {
-        cb?: (timeblock: TimeBlock) => void;
-      };
-    };
