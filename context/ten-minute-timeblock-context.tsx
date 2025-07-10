@@ -1,6 +1,6 @@
 import React, { createContext, useReducer, Dispatch, useContext } from "react";
 import { TimeBlock } from "@custom/components/ten-minute-planner";
-import { initialTimeStart } from "@custom/config/defaults";
+import { daysRow, initialTimeStart } from "@custom/config/defaults";
 import { BgColorWithLightness } from "@custom/types";
 
 export type Range = null | [number] | [Number, number];
@@ -10,6 +10,14 @@ export interface TimeblockContextState {
   form: TimeblockForm;
   range: Range;
   currentTimeblock: TimeBlock | null;
+  note: string;
+  comment: string;
+  goal: string;
+  dDay: number;
+  // daysDid
+  dayCategories: string[];
+  dayToDos: string[];
+  checked: boolean[];
 }
 
 export interface TimeblockForm {
@@ -43,6 +51,43 @@ export type TimeblockContextAction =
   | {
       type: "SET_TIMEBLOCK";
       payload: TimeBlock | null;
+    }
+  | {
+      type: "UPDATE_NOTE";
+      payload: string;
+    }
+  | {
+      type: "UPDATE_COMMENT";
+      payload: string;
+    }
+  | {
+      type: "UPDATE_GOAL";
+      payload: string;
+    }
+  | {
+      type: "UPDATE_DDAY";
+      payload: number;
+    }
+  | {
+      type: "UPDATE_DAY_CATEGORY";
+      payload: {
+        category: string;
+        index: number;
+      };
+    }
+  | {
+      type: "UPDATE_DAY_TODO";
+      payload: {
+        todos: string;
+        index: number;
+      };
+    }
+  | {
+      type: "UPDATE_CHECKED";
+      payload: {
+        checked: boolean;
+        index: number;
+      };
     };
 
 const initialContext: TimeblockContextState = {
@@ -57,6 +102,13 @@ const initialContext: TimeblockContextState = {
   },
   range: null,
   currentTimeblock: null,
+  note: "",
+  comment: "",
+  goal: "",
+  dDay: 0,
+  dayCategories: Array.from({ length: daysRow }).map(() => ""),
+  dayToDos: Array.from({ length: daysRow }).map(() => ""),
+  checked: Array.from({ length: daysRow }).map(() => false),
 };
 
 export const TimeblockContext = createContext<
@@ -100,6 +152,50 @@ const timeblockReducer = (
       return {
         ...prevState,
         currentTimeblock: action.payload,
+      };
+    case "UPDATE_NOTE":
+      return {
+        ...prevState,
+        note: action.payload,
+      };
+    case "UPDATE_COMMENT":
+      return {
+        ...prevState,
+        comment: action.payload,
+      };
+    case "UPDATE_GOAL":
+      return {
+        ...prevState,
+        goal: action.payload,
+      };
+    case "UPDATE_DDAY":
+      return {
+        ...prevState,
+        dDay: action.payload,
+      };
+    case "UPDATE_DAY_CATEGORY":
+      const { category, index } = action.payload;
+      const updatedCategories = [...prevState.dayCategories];
+      updatedCategories[index] = category;
+      return {
+        ...prevState,
+        dayCategories: updatedCategories,
+      };
+    case "UPDATE_DAY_TODO":
+      const { todos, index: todoIndex } = action.payload;
+      const updatedToDos = [...prevState.dayToDos];
+      updatedToDos[todoIndex] = todos;
+      return {
+        ...prevState,
+        dayToDos: updatedToDos,
+      };
+    case "UPDATE_CHECKED":
+      const { checked, index: checkedIndex } = action.payload;
+      const updatedChecked = [...prevState.checked];
+      updatedChecked[checkedIndex] = checked;
+      return {
+        ...prevState,
+        checked: updatedChecked,
       };
     default:
       throw Error("Invalid Action Type Provided");
