@@ -9,6 +9,7 @@ import { useState } from "react";
 import { _500Colors } from "@custom/types";
 import { debounceInputUpdate } from "@custom/lib";
 import { daysRow } from "@custom/config/defaults";
+import dayjs from "dayjs";
 
 const DayPage = () => {
   const [showTimeblockSlider, setShowTimeblockSlider] = useState(false);
@@ -47,8 +48,16 @@ const DayPage = () => {
     },
     500
   );
-  const { timeblocks, note, comment, goal, dDay, dayCategories, dayToDos } =
-    timeblockContext;
+  const {
+    timeblocks,
+    note,
+    comment,
+    goal,
+    dDay,
+    dayCategories,
+    dayToDos,
+    date,
+  } = timeblockContext;
   const onTimeblockCreate = (start: number, end: number, cb?: () => void) => {
     setShowTimeblockSlider(true);
     setTimeblockContent({ start, end });
@@ -78,8 +87,10 @@ const DayPage = () => {
       <div className="grid grid-cols-6 border-r-1">
         <div className="col-span-1 flex justify-center border-r-1 border-b-1">
           <div className="text-sm flex items-center flex-col font-medium h-full justify-center gap-1">
-            <div className="text-5xl">20</div>
-            <div className="text-lg">THU</div>
+            <div className="text-5xl">{dayjs(date).format("DD")}</div>
+            <div className="text-lg">
+              {dayjs(date).format("ddd").toUpperCase()}
+            </div>
           </div>
         </div>
         <div className="col-span-3 border-r-1">
@@ -196,11 +207,12 @@ const DayPage = () => {
 
 interface DayPageWrapperProps {
   timeblocks: TimeBlock[];
+  date: Date;
 }
 
-export default function ({ timeblocks }: DayPageWrapperProps) {
+export default function ({ timeblocks, date }: DayPageWrapperProps) {
   return (
-    <TimeblockContextProvider timeblocks={timeblocks}>
+    <TimeblockContextProvider timeblocks={timeblocks} date={date}>
       <DayPage></DayPage>
     </TimeblockContextProvider>
   );

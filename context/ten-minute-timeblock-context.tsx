@@ -18,6 +18,7 @@ export interface TimeblockContextState {
   dayCategories: string[];
   dayToDos: string[];
   checked: boolean[];
+  date: Date;
 }
 
 export interface TimeblockForm {
@@ -109,6 +110,7 @@ const initialContext: TimeblockContextState = {
   dayCategories: Array.from({ length: daysRow }).map(() => ""),
   dayToDos: Array.from({ length: daysRow }).map(() => ""),
   checked: Array.from({ length: daysRow }).map(() => false),
+  date: new Date(),
 };
 
 export const TimeblockContext = createContext<
@@ -205,13 +207,16 @@ const timeblockReducer = (
 export const TimeblockContextProvider = ({
   children,
   timeblocks,
+  date,
 }: {
   children: React.ReactNode;
   timeblocks: TimeBlock[];
+  date: Date;
 }): any => {
   const reducer = useReducer(timeblockReducer, {
     ...initialContext,
     timeblocks,
+    date,
   });
 
   return (

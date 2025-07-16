@@ -1,5 +1,7 @@
 "use client";
 import DayPage from "@custom/components/dayPage";
+import AppLayout from "@custom/components/layout/appLayout";
+import { useGlobalProps } from "@custom/context/global-context";
 import { _500Colors } from "@custom/types";
 
 /*
@@ -11,17 +13,17 @@ Todo:
 - how do I integrate DB?
 */
 export default function Home() {
+  const [globalProps] = useGlobalProps();
+  const { currentDate } = globalProps;
+
   return (
-    <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-      <div>
-        <h1 className="text-2xl pb-1 font-bold uppercase">2025 October</h1>
-      </div>
+    <AppLayout>
       <div className="flex border-t-2">
         <div className="flex-1">
-          <DayPage timeblocks={[]} />
+          <DayPage timeblocks={[]} date={currentDate} />
         </div>
         <div className="flex-1">Space</div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
